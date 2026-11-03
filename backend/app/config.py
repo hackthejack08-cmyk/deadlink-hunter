@@ -4,7 +4,12 @@ def _bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes"}
 
 DB_PATH = os.getenv("DLH_DB_PATH", "deadlink.db")
-CORS_ORIGINS = [o.strip() for o in os.getenv("DLH_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()]
+CORS_ORIGINS = list(dict.fromkeys([
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://deadlink-hunter.vercel.app",
+    *(o.strip() for o in os.getenv("DLH_CORS_ORIGINS", "").split(",") if o.strip()),
+]))
 MAX_CONCURRENT_SCANS = int(os.getenv("DLH_MAX_CONCURRENT_SCANS", "2"))
 ALLOW_PRIVATE_HOSTS = _bool("DLH_ALLOW_PRIVATE_HOSTS")
 

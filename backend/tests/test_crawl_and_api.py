@@ -60,6 +60,12 @@ def test_api_contract(tmp_path):
     mgr = ScanManager(Database(db_path), client_factory=factory)
     with TestClient(create_app(db_path, mgr)) as c:
         assert c.get("/api/health").json()["status"] == "ok"
+        preflight = c.options("/api/scans", headers={
+            "Origin": "https://deadlink-hunter.vercel.app",
+            "Access-Control-Request-Method": "POST",
+        })
+        assert preflight.status_code == 200
+        assert preflight.headers["access-control-allow-origin"] == "https://deadlink-hunter.vercel.app"
         bad = c.post("/api/scans", json={"url": "http://169.254.169.254/"})
         assert bad.status_code == 400
         assert c.post("/api/scans", json={"url": "ftp://example.test"}).status_code == 400
