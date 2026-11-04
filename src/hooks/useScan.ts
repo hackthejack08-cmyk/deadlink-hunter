@@ -9,6 +9,7 @@ export function useScan() {
   const timer = useRef<number | undefined>(undefined);
   const busy = useRef(false);
   const polling = useRef(false);
+  const cancelRequested = useRef(false);
 
   const stop = useCallback(() => {
     if (timer.current !== undefined) {
@@ -27,12 +28,20 @@ export function useScan() {
     if (busy.current) return;
 
     busy.current = true;
+    cancelRequested.current = false;
     stop();
     setError(null);
 
     try {
       const first = await startScan({ url });
       setJob(first);
+
+      if (cancelRequested.current) {
+        await cancelScan(first.id);
+        setJob({ ...first, status: 'cancelled', progress: undefined });
+        busy.current = false;
+        return;
+      }
 
       if (first.status !== 'running' && first.status !== 'queued') {
         busy.current = false;
@@ -67,9 +76,14 @@ export function useScan() {
   }, [stop]);
 
   const cancel = useCallback(async () => {
-    if (!job || !busy.current) return;
+    if (!busy.current) return;
 
     stop();
+
+    if (!job) {
+      cancelRequested.current = true;
+      return;
+    }
 
     try {
       await cancelScan(job.id);
@@ -82,6 +96,7 @@ export function useScan() {
   const reset = useCallback(() => {
     stop();
     busy.current = false;
+    cancelRequested.current = false;
     setJob(null);
     setError(null);
   }, [stop]);
