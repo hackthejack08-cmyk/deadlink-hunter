@@ -8,6 +8,7 @@ CORS_ORIGINS = list(dict.fromkeys([
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://deadlink-hunter.vercel.app",
+    "https://deadlink-hunter-m6ip.vercel.app",
     *(o.strip() for o in os.getenv("DLH_CORS_ORIGINS", "").split(",") if o.strip()),
 ]))
 MAX_CONCURRENT_SCANS = int(os.getenv("DLH_MAX_CONCURRENT_SCANS", "2"))
