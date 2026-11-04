@@ -1,9 +1,11 @@
 ﻿const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
 
-export const hasBackend = Boolean(BASE);
+const API_BASE = import.meta.env.PROD ? '' : BASE;
+
+export const hasBackend = import.meta.env.PROD || Boolean(API_BASE);
 
 export async function http<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!BASE) {
+  if (API_BASE === undefined) {
     throw new Error('VITE_API_URL is not set. Configure the backend URL in .env.');
   }
 
@@ -13,7 +15,7 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${BASE}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers,
   });
